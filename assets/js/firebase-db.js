@@ -88,17 +88,47 @@ const DB = {
     }
   },
 
+  // ── Compress foto base64 agar tidak melebihi limit Firestore (1MB/doc) ──
+  compressFoto(base64, maxWidth = 800) {
+    return new Promise(resolve => {
+      if (!base64 || !base64.startsWith('data:image')) { resolve(base64); return; }
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        let w = img.width, h = img.height;
+        if (w > maxWidth) { h = Math.round(h * maxWidth / w); w = maxWidth; }
+        canvas.width = w; canvas.height = h;
+        canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+        resolve(canvas.toDataURL('image/jpeg', 0.7));
+      };
+      img.onerror = () => resolve(base64);
+      img.src = base64;
+    });
+  },
+
   // ── Tambah satu item ke koleksi ──
   async addItem(key, item) {
     const id = String(item.id || Date.now());
     item.id = id;
     item._order = Date.now();
+    // Compress foto sebelum simpan ke Firestore
+    if (item.foto && item.foto.startsWith('data:image')) {
+      item.foto = await this.compressFoto(item.foto);
+    }
     if (db) {
-      await db.collection(key).doc(id).set(item);
+      try {
+        await db.collection(key).doc(id).set(item);
+      } catch(e) {
+        // Kalau masih error (misal foto terlalu besar), simpan tanpa foto
+        console.warn('Firestore save error, retry tanpa foto:', e.message);
+        const itemNoFoto = {...item, foto: null};
+        await db.collection(key).doc(id).set(itemNoFoto);
+      }
     } else {
       const list = JSON.parse(localStorage.getItem('gkps_' + key) || '[]');
       list.unshift(item);
-      localStorage.setItem('gkps_' + key, JSON.stringify(list));
+      try { localStorage.setItem('gkps_' + key, JSON.stringify(list)); }
+      catch(e) { console.warn('localStorage full'); }
     }
     return item;
   },
@@ -117,7 +147,12 @@ const DB = {
   // ── Simpan objek tunggal (settings) ──
   async setDoc(key, data) {
     if (db) {
-      await db.collection('settings').doc(key).set(data);
+      try {
+        await db.collection('settings').doc(key).set(data);
+      } catch(e) {
+        console.error('setDoc error:', e.message);
+        throw e;
+      }
     } else {
       localStorage.setItem('gkps_' + key, JSON.stringify(data));
     }

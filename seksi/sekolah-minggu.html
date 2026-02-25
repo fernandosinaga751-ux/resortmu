@@ -6,10 +6,6 @@
 <title>Seksi Sekolah Minggu Resort Medan Utara | GKPS</title>
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../assets/css/main.css">
-<!-- Firebase SDK -->
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-<script src="../assets/js/firebase-db.js"></script>
 </head>
 <body>
 
@@ -196,9 +192,13 @@
   <div class="footer-bottom">© 2024 GKPS Resort Medan Utara · Soli Deo Gloria</div>
 </footer>
 
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="../assets/js/firebase-db.js"></script>
 <script src="../assets/js/main.js"></script>
 <script>
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
   const kegiatan = await DB.getList('kegiatan_seksi_sekolah-minggu');
   const kegiatanList = document.getElementById('kegiatan-list');
   
