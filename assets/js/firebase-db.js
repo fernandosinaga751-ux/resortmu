@@ -11,12 +11,12 @@
    ═══════════════════════════════════════════════════════════════ */
 
 const FIREBASE_CONFIG = {
-  apiKey:            window.ENV_FIREBASE_API_KEY            || "AIzaSyA06ioabPsOgU4OqSX60SOdtctIJnH0iSk",
-  authDomain:        window.ENV_FIREBASE_AUTH_DOMAIN        || "gkps-resort-mu.firebaseapp.com",
-  projectId:         window.ENV_FIREBASE_PROJECT_ID         || "gkps-resort-mu",
-  storageBucket:     window.ENV_FIREBASE_STORAGE_BUCKET     || "Ggkps-resort-mu.firebasestorage.app",
-  messagingSenderId: window.ENV_FIREBASE_MESSAGING_SENDER_ID|| "267467801408",
-  appId:             window.ENV_FIREBASE_APP_ID             || "1:267467801408:web:f50bd5e7c135e4abbcb0a5",
+  apiKey:            window.ENV_FIREBASE_API_KEY            || "GANTI_API_KEY",
+  authDomain:        window.ENV_FIREBASE_AUTH_DOMAIN        || "GANTI.firebaseapp.com",
+  projectId:         window.ENV_FIREBASE_PROJECT_ID         || "GANTI_PROJECT_ID",
+  storageBucket:     window.ENV_FIREBASE_STORAGE_BUCKET     || "GANTI.appspot.com",
+  messagingSenderId: window.ENV_FIREBASE_MESSAGING_SENDER_ID|| "GANTI_SENDER_ID",
+  appId:             window.ENV_FIREBASE_APP_ID             || "GANTI_APP_ID",
 };
 
 // ── Deteksi apakah Firebase sudah dikonfigurasi ──
@@ -26,8 +26,14 @@ let db = null;
 
 if (FB_READY) {
   try {
-    firebase.initializeApp(FIREBASE_CONFIG);
+    // Cek apakah Firebase sudah di-init sebelumnya
+    if (!firebase.apps.length) {
+      firebase.initializeApp(FIREBASE_CONFIG);
+    }
     db = firebase.firestore();
+    // Aktifkan cache offline agar data tetap muncul walau koneksi lambat
+    db.settings({ cacheSizeBytes: firebase.firestore.CACHE_SIZE_UNLIMITED });
+    db.enablePersistence({ synchronizeTabs: true }).catch(() => {});
     console.log('✅ Firebase Firestore terhubung');
   } catch(e) {
     console.warn('⚠️ Firebase gagal init, pakai localStorage:', e.message);
@@ -62,12 +68,19 @@ const DB = {
   async getList(key) {
     if (db) {
       try {
-        const snap = await db.collection(key).orderBy('_order', 'asc').get().catch(() =>
-          db.collection(key).get()
-        );
-        return snap.docs.map(d => d.data());
+        // Coba dengan sort, kalau gagal tanpa sort
+        let snap;
+        try {
+          snap = await db.collection(key).orderBy('_order', 'desc').get();
+        } catch(e) {
+          snap = await db.collection(key).get();
+        }
+        const data = snap.docs.map(d => d.data());
+        // Sort secara lokal berdasarkan _order descending (terbaru dulu)
+        data.sort((a, b) => (b._order || 0) - (a._order || 0));
+        return data;
       } catch(e) {
-        console.warn('Firestore read error:', e);
+        console.warn('Firestore read error:', e.message);
         return [];
       }
     } else {
