@@ -11,12 +11,12 @@
    ═══════════════════════════════════════════════════════════════ */
 
 const FIREBASE_CONFIG = {
-  apiKey:            window.ENV_FIREBASE_API_KEY            || "GANTI_API_KEY",
-  authDomain:        window.ENV_FIREBASE_AUTH_DOMAIN        || "GANTI.firebaseapp.com",
-  projectId:         window.ENV_FIREBASE_PROJECT_ID         || "GANTI_PROJECT_ID",
-  storageBucket:     window.ENV_FIREBASE_STORAGE_BUCKET     || "GANTI.appspot.com",
-  messagingSenderId: window.ENV_FIREBASE_MESSAGING_SENDER_ID|| "GANTI_SENDER_ID",
-  appId:             window.ENV_FIREBASE_APP_ID             || "GANTI_APP_ID",
+  apiKey:            window.ENV_FIREBASE_API_KEY            || "AIzaSyA06ioabPsOgU4OqSX60SOdtctIJnH0iSk",
+  authDomain:        window.ENV_FIREBASE_AUTH_DOMAIN        || "gkps-resort-mu.firebaseapp.com",
+  projectId:         window.ENV_FIREBASE_PROJECT_ID         || "gkps-resort-mu",
+  storageBucket:     window.ENV_FIREBASE_STORAGE_BUCKET     || "gkps-resort-mu.firebasestorage.app",
+  messagingSenderId: window.ENV_FIREBASE_MESSAGING_SENDER_ID|| "267467801408",
+  appId:             window.ENV_FIREBASE_APP_ID             || "1:267467801408:web:f50bd5e7c135e4abbcb0a5",
 };
 
 // ── Deteksi apakah Firebase sudah dikonfigurasi ──
