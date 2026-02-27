@@ -11,18 +11,19 @@
    ═══════════════════════════════════════════════════════════════ */
 
 const FIREBASE_CONFIG = {
-  apiKey:            window.ENV_FIREBASE_API_KEY            || "AIzaSyA06ioabPsOgU4OqSX60SOdtctIJnH0iSk",
-  authDomain:        window.ENV_FIREBASE_AUTH_DOMAIN        || "gkps-resort-mu.firebaseapp.com",
-  projectId:         window.ENV_FIREBASE_PROJECT_ID         || "gkps-resort-mu",
-  storageBucket:     window.ENV_FIREBASE_STORAGE_BUCKET     || "gkps-resort-mu.firebasestorage.app",
-  messagingSenderId: window.ENV_FIREBASE_MESSAGING_SENDER_ID|| "267467801408",
-  appId:             window.ENV_FIREBASE_APP_ID             || "1:267467801408:web:f50bd5e7c135e4abbcb0a5",
+  apiKey:            window.ENV_FIREBASE_API_KEY            || "GANTI_API_KEY",
+  authDomain:        window.ENV_FIREBASE_AUTH_DOMAIN        || "GANTI.firebaseapp.com",
+  projectId:         window.ENV_FIREBASE_PROJECT_ID         || "GANTI_PROJECT_ID",
+  storageBucket:     window.ENV_FIREBASE_STORAGE_BUCKET     || "GANTI.appspot.com",
+  messagingSenderId: window.ENV_FIREBASE_MESSAGING_SENDER_ID|| "GANTI_SENDER_ID",
+  appId:             window.ENV_FIREBASE_APP_ID             || "GANTI_APP_ID",
 };
 
 // ── Deteksi apakah Firebase sudah dikonfigurasi ──
 const FB_READY = !FIREBASE_CONFIG.apiKey.includes('GANTI');
 
 let db = null;
+let storage = null;
 
 if (FB_READY) {
   try {
@@ -34,7 +35,12 @@ if (FB_READY) {
     // Aktifkan cache offline agar data tetap muncul walau koneksi lambat
     db.settings({ cacheSizeBytes: firebase.firestore.CACHE_SIZE_UNLIMITED });
     db.enablePersistence({ synchronizeTabs: true }).catch(() => {});
+    // Init Firebase Storage
+    if (typeof firebase.storage !== 'undefined') {
+      storage = firebase.storage();
+    }
     console.log('✅ Firebase Firestore terhubung');
+    if (storage) console.log('✅ Firebase Storage terhubung');
   } catch(e) {
     console.warn('⚠️ Firebase gagal init, pakai localStorage:', e.message);
   }
@@ -215,42 +221,183 @@ const DB = {
 };
 
 /* ═══════════════════════════════════════════════════════
-   AUTH HELPER — persist login dengan sessionStorage + localStorage
+   AUTH HELPER — password & session 100% dari Firestore (berlaku semua perangkat)
    ═══════════════════════════════════════════════════════ */
 
 const AUTH = {
-  KEY_PASS: 'gkps_admin_pass',
   KEY_SESSION: 'gkps_admin_logged',
   DEFAULT_PASS: 'admin123',
 
-  getPass() {
-    return localStorage.getItem(this.KEY_PASS) || this.DEFAULT_PASS;
+  // ── Ambil password HANYA dari Firestore — tidak pakai cache localStorage ──
+  async getPass() {
+    if (db) {
+      try {
+        const snap = await db.collection('settings').doc('admin_config').get();
+        if (snap.exists && snap.data().password) {
+          return snap.data().password;
+        }
+      } catch(e) {
+        console.warn('Gagal ambil password dari Firestore:', e.message);
+      }
+    }
+    // Firestore tidak tersedia → pakai default (hanya saat Firebase belum dikonfigurasi)
+    return this.DEFAULT_PASS;
   },
 
-  // Login: simpan session di KEDUA storage agar persist saat refresh
-  login(password) {
-    if (password === this.getPass()) {
-      localStorage.setItem(this.KEY_SESSION, 'true');   // bertahan selamanya
-      sessionStorage.setItem(this.KEY_SESSION, 'true'); // backup
+  // ── Login: selalu cek password terbaru dari Firestore ──
+  async login(password) {
+    const correctPass = await this.getPass();
+    if (password === correctPass) {
+      sessionStorage.setItem(this.KEY_SESSION, 'true');
       return true;
     }
     return false;
   },
 
-  // Cek apakah sudah login (cek keduanya)
   isLoggedIn() {
-    return localStorage.getItem(this.KEY_SESSION) === 'true' ||
-           sessionStorage.getItem(this.KEY_SESSION) === 'true';
+    return sessionStorage.getItem(this.KEY_SESSION) === 'true';
   },
 
   logout() {
-    localStorage.removeItem(this.KEY_SESSION);
     sessionStorage.removeItem(this.KEY_SESSION);
   },
 
-  changePassword(oldPass, newPass) {
-    if (oldPass !== this.getPass()) return false;
-    localStorage.setItem(this.KEY_PASS, newPass);
-    return true;
+  // ── Ganti password: simpan HANYA ke Firestore, berlaku semua perangkat ──
+  async changePassword(oldPass, newPass) {
+    const correctPass = await this.getPass();
+    if (oldPass !== correctPass) return false;
+    if (!db) {
+      console.warn('Firestore tidak tersedia, password tidak bisa diubah.');
+      return false;
+    }
+    try {
+      await db.collection('settings').doc('admin_config').set({ password: newPass }, { merge: true });
+      return true;
+    } catch(e) {
+      console.warn('Gagal simpan password ke Firestore:', e.message);
+      return false;
+    }
+  }
+};
+
+/* ═══════════════════════════════════════════════════════
+   STORAGE API — Upload/download file via Firebase Storage
+   Fallback ke localStorage jika Storage belum dikonfigurasi
+   ═══════════════════════════════════════════════════════ */
+
+const STORAGE = {
+
+  isReady() { return !!storage; },
+
+  // ── Upload file ke Firebase Storage, simpan metadata ke Firestore ──
+  async uploadFile(seksiId, file, onProgress) {
+    if (!storage) {
+      // Fallback: base64 ke localStorage (untuk dev/testing)
+      return await this._uploadLocalFallback(seksiId, file);
+    }
+
+    const path = `files/${seksiId}/${Date.now()}_${file.name}`;
+    const ref = storage.ref(path);
+    const uploadTask = ref.put(file);
+
+    return new Promise((resolve, reject) => {
+      uploadTask.on('state_changed',
+        snapshot => {
+          const pct = Math.round(snapshot.bytesTransferred / snapshot.totalBytes * 100);
+          if (onProgress) onProgress(pct);
+        },
+        err => reject(err),
+        async () => {
+          const downloadURL = await uploadTask.snapshot.ref.getDownloadURL();
+          const meta = {
+            id: Date.now() + '_' + Math.random().toString(36).substr(2, 5),
+            name: file.name,
+            type: file.type,
+            size: this._fmtBytes(file.size),
+            sizeBytes: file.size,
+            date: new Date().toLocaleDateString('id-ID', { day:'2-digit', month:'long', year:'numeric' }),
+            url: downloadURL,
+            path: path,
+            _order: Date.now()
+          };
+          // Simpan metadata ke Firestore
+          await DB.addItem('files_seksi_' + seksiId, meta);
+          resolve(meta);
+        }
+      );
+    });
+  },
+
+  // ── Hapus file dari Storage + metadata dari Firestore ──
+  async deleteFile(seksiId, fileId, filePath) {
+    if (storage && filePath) {
+      try {
+        await storage.ref(filePath).delete();
+      } catch(e) {
+        console.warn('Gagal hapus dari Storage (mungkin sudah dihapus):', e.message);
+      }
+    }
+    await DB.deleteItem('files_seksi_' + seksiId, fileId);
+    // Hapus juga dari localStorage fallback
+    this._deleteLocalFallback(seksiId, fileId);
+  },
+
+  // ── Ambil daftar file (gabungan Firestore + localStorage fallback) ──
+  async getFiles(seksiId) {
+    let files = [];
+    // Dari Firestore/localStorage DB
+    try {
+      files = await DB.getList('files_seksi_' + seksiId);
+    } catch(e) { files = []; }
+    // Gabungkan dengan file lama dari localStorage fallback
+    const local = this._getLocalFallback(seksiId);
+    const allIds = new Set(files.map(f => String(f.id)));
+    local.forEach(f => { if (!allIds.has(String(f.id))) files.push(f); });
+    files.sort((a,b) => (b._order||0) - (a._order||0));
+    return files;
+  },
+
+  // ── Fallback: simpan base64 ke localStorage ──
+  async _uploadLocalFallback(seksiId, file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = e => {
+        const meta = {
+          id: Date.now() + '_' + Math.random().toString(36).substr(2, 5),
+          name: file.name,
+          type: file.type,
+          size: this._fmtBytes(file.size),
+          sizeBytes: file.size,
+          date: new Date().toLocaleDateString('id-ID', { day:'2-digit', month:'long', year:'numeric' }),
+          data: e.target.result, // base64
+          _order: Date.now()
+        };
+        const key = 'gkps_files_seksi_' + seksiId;
+        const list = JSON.parse(localStorage.getItem(key) || '[]');
+        list.unshift(meta);
+        try { localStorage.setItem(key, JSON.stringify(list)); }
+        catch(err) { reject(new Error('localStorage penuh')); return; }
+        resolve(meta);
+      };
+      reader.onerror = () => reject(new Error('Gagal baca file'));
+      reader.readAsDataURL(file);
+    });
+  },
+
+  _getLocalFallback(seksiId) {
+    try { return JSON.parse(localStorage.getItem('gkps_files_seksi_' + seksiId) || '[]'); }
+    catch(e) { return []; }
+  },
+
+  _deleteLocalFallback(seksiId, fileId) {
+    const key = 'gkps_files_seksi_' + seksiId;
+    const list = this._getLocalFallback(seksiId).filter(f => String(f.id) !== String(fileId));
+    localStorage.setItem(key, JSON.stringify(list));
+  },
+
+  _fmtBytes(b) {
+    if (b < 1024) return b + ' B';
+    if (b < 1048576) return (b/1024).toFixed(1) + ' KB';
+    return (b/1048576).toFixed(1) + ' MB';
   }
 };
