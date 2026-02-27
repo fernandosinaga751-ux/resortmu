@@ -11,13 +11,12 @@
    ═══════════════════════════════════════════════════════════════ */
 
 const FIREBASE_CONFIG = {
-  apiKey: "AIzaSyA06ioabPsOgU4OqSX60SOdtctIJnH0iSk",
-  authDomain: "gkps-resort-mu.firebaseapp.com",
-  projectId: "gkps-resort-mu",
-  storageBucket: "gkps-resort-mu.firebasestorage.app",
-  messagingSenderId: "267467801408",
-  appId: "1:267467801408:web:f50bd5e7c135e4abbcb0a5",
-  measurementId: "G-JHDX5PB82D"
+  apiKey:            window.ENV_FIREBASE_API_KEY            || "GANTI_API_KEY",
+  authDomain:        window.ENV_FIREBASE_AUTH_DOMAIN        || "GANTI.firebaseapp.com",
+  projectId:         window.ENV_FIREBASE_PROJECT_ID         || "GANTI_PROJECT_ID",
+  storageBucket:     window.ENV_FIREBASE_STORAGE_BUCKET     || "GANTI.appspot.com",
+  messagingSenderId: window.ENV_FIREBASE_MESSAGING_SENDER_ID|| "GANTI_SENDER_ID",
+  appId:             window.ENV_FIREBASE_APP_ID             || "GANTI_APP_ID",
 };
 
 // ── Deteksi apakah Firebase sudah dikonfigurasi ──
@@ -33,9 +32,8 @@ if (FB_READY) {
       firebase.initializeApp(FIREBASE_CONFIG);
     }
     db = firebase.firestore();
-    // Aktifkan cache offline agar data tetap muncul walau koneksi lambat
-    db.settings({ cacheSizeBytes: firebase.firestore.CACHE_SIZE_UNLIMITED });
-    db.enablePersistence({ synchronizeTabs: true }).catch(() => {});
+    // Cache offline dinonaktifkan untuk koleksi 'settings'
+    // agar password selalu dibaca langsung dari server (tidak dari cache)
     // Init Firebase Storage
     if (typeof firebase.storage !== 'undefined') {
       storage = firebase.storage();
@@ -229,20 +227,33 @@ const AUTH = {
   KEY_SESSION: 'gkps_admin_logged',
   DEFAULT_PASS: 'admin123',
 
-  // ── Ambil password HANYA dari Firestore — tidak pakai cache localStorage ──
+  // ── Ambil password dari Firestore (SELALU dari server, bypass cache).
+  //    Jika dokumen belum ada → seed DEFAULT_PASS ke Firestore sekarang.
   async getPass() {
-    if (db) {
-      try {
-        const snap = await db.collection('settings').doc('admin_config').get();
-        if (snap.exists && snap.data().password) {
-          return snap.data().password;
-        }
-      } catch(e) {
-        console.warn('Gagal ambil password dari Firestore:', e.message);
+    if (!db) return this.DEFAULT_PASS; // Firebase belum dikonfigurasi
+
+    try {
+      // { source: 'server' } = paksa ambil dari server, abaikan cache browser
+      const snap = await db.collection('settings').doc('admin_config').get({ source: 'server' });
+
+      if (snap.exists && snap.data().password) {
+        return snap.data().password;
       }
+
+      // Dokumen belum ada → seed password default ke Firestore
+      await db.collection('settings').doc('admin_config').set({ password: this.DEFAULT_PASS }, { merge: true });
+      console.log('✅ Password default di-seed ke Firestore.');
+      return this.DEFAULT_PASS;
+
+    } catch(e) {
+      // Jika source:'server' gagal (offline), coba tanpa source sebagai fallback
+      try {
+        const snap2 = await db.collection('settings').doc('admin_config').get();
+        if (snap2.exists && snap2.data().password) return snap2.data().password;
+      } catch(e2) {}
+      console.warn('Gagal akses Firestore:', e.message);
+      return this.DEFAULT_PASS;
     }
-    // Firestore tidak tersedia → pakai default (hanya saat Firebase belum dikonfigurasi)
-    return this.DEFAULT_PASS;
   },
 
   // ── Login: selalu cek password terbaru dari Firestore ──
@@ -263,7 +274,7 @@ const AUTH = {
     sessionStorage.removeItem(this.KEY_SESSION);
   },
 
-  // ── Ganti password: simpan HANYA ke Firestore, berlaku semua perangkat ──
+  // ── Ganti password: simpan ke Firestore, berlaku semua perangkat ──
   async changePassword(oldPass, newPass) {
     const correctPass = await this.getPass();
     if (oldPass !== correctPass) return false;
