@@ -11,12 +11,13 @@
    ═══════════════════════════════════════════════════════════════ */
 
 const FIREBASE_CONFIG = {
-  apiKey:            window.ENV_FIREBASE_API_KEY            || "GANTI_API_KEY",
-  authDomain:        window.ENV_FIREBASE_AUTH_DOMAIN        || "GANTI.firebaseapp.com",
-  projectId:         window.ENV_FIREBASE_PROJECT_ID         || "GANTI_PROJECT_ID",
-  storageBucket:     window.ENV_FIREBASE_STORAGE_BUCKET     || "GANTI.appspot.com",
-  messagingSenderId: window.ENV_FIREBASE_MESSAGING_SENDER_ID|| "GANTI_SENDER_ID",
-  appId:             window.ENV_FIREBASE_APP_ID             || "GANTI_APP_ID",
+  apiKey: "AIzaSyA06ioabPsOgU4OqSX60SOdtctIJnH0iSk",
+  authDomain: "gkps-resort-mu.firebaseapp.com",
+  projectId: "gkps-resort-mu",
+  storageBucket: "gkps-resort-mu.firebasestorage.app",
+  messagingSenderId: "267467801408",
+  appId: "1:267467801408:web:f50bd5e7c135e4abbcb0a5",
+  measurementId: "G-JHDX5PB82D"
 };
 
 // ── Deteksi apakah Firebase sudah dikonfigurasi ──
