@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Seksi Sekolah Minggu – GKPS Krakatau | GKPS Resort Medan Utara</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../assets/css/main.css">
+<style>
+.seksi-hero{background:linear-gradient(135deg,var(--burgundy-dark) 0%,var(--burgundy) 70%,#9B2B48 100%);padding:56px 50px 44px;position:relative;overflow:hidden;}
+.seksi-hero::before{content:'✝';position:absolute;right:-20px;top:-40px;font-size:240px;color:rgba(255,255,255,.04);pointer-events:none;}
+.sh-tag{font-family:'Cinzel',serif;font-size:9px;letter-spacing:4px;text-transform:uppercase;color:var(--gold-light);margin-bottom:14px;}
+.sh-title{font-family:'Cinzel',serif;font-size:clamp(22px,3vw,34px);font-weight:700;color:var(--cream);margin-bottom:10px;}
+.sh-title em{font-style:normal;color:var(--gold-light);}
+.sh-meta{display:flex;gap:32px;flex-wrap:wrap;margin-top:18px;}
+.sh-meta-item{display:flex;flex-direction:column;gap:3px;}
+.sh-meta-label{font-family:'Cinzel',serif;font-size:8px;letter-spacing:3px;text-transform:uppercase;color:rgba(255,255,255,.4);}
+.sh-meta-val{font-size:14px;color:rgba(255,255,255,.85);font-style:italic;}
+.pengurus-section{padding:50px 50px 30px;}
+.keg-section{padding:0 50px 60px;}
+.section-heading{font-family:'Cinzel',serif;font-size:15px;font-weight:700;color:var(--burgundy-dark);letter-spacing:2px;text-transform:uppercase;border-bottom:2px solid var(--gold);padding-bottom:10px;margin-bottom:24px;display:flex;align-items:center;gap:10px;}
+.section-heading span{font-size:20px;}
+/* Pengurus table */
+.pengurus-table-wrap{overflow-x:auto;}
+.pengurus-table{width:100%;border-collapse:collapse;max-width:760px;}
+.pengurus-table th{font-family:'Cinzel',serif;font-size:9px;letter-spacing:3px;text-transform:uppercase;color:var(--cream);background:var(--burgundy);padding:12px 16px;text-align:left;}
+.pengurus-table td{font-size:14px;color:var(--text);padding:12px 16px;border-bottom:1px solid var(--parchment2);background:var(--white);}
+.pengurus-table tr:nth-child(even) td{background:var(--parchment);}
+.pengurus-table tr:hover td{background:#FDF0F4;}
+.pengurus-empty{font-size:14px;color:var(--text-muted);font-style:italic;padding:20px 0;}
+/* Kegiatan form */
+.keg-add-form{background:var(--white);border:1px solid var(--parchment2);border-radius:6px;padding:24px;margin-bottom:28px;max-width:680px;display:none;}
+.keg-add-form.show{display:block;}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.fg{display:flex;flex-direction:column;gap:6px;margin-bottom:14px;}
+.fg label{font-family:'Cinzel',serif;font-size:9px;letter-spacing:3px;text-transform:uppercase;color:var(--text-muted);}
+.fg input,.fg textarea,.fg select{font-family:'EB Garamond',serif;font-size:15px;color:var(--text);background:var(--cream);border:1px solid var(--parchment2);padding:10px 13px;border-radius:4px;outline:none;width:100%;}
+.fg input:focus,.fg textarea:focus{border-color:var(--burgundy);}
+.fg textarea{min-height:80px;resize:vertical;}
+/* Upload area */
+.upload-area{border:2px dashed var(--parchment2);border-radius:6px;padding:24px;text-align:center;cursor:pointer;transition:border-color .2s;background:var(--cream);position:relative;}
+.upload-area:hover{border-color:var(--burgundy);}
+.upload-area input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;}
+.upload-area-icon{font-size:28px;margin-bottom:8px;}
+.upload-area-text{font-family:'Cinzel',serif;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--burgundy);}
+.upload-area-sub{font-size:12px;color:var(--text-muted);font-style:italic;margin-top:4px;}
+.preview-img{width:100%;max-height:180px;object-fit:cover;border-radius:4px;margin-top:10px;display:none;}
+/* Buttons */
+.btn-primary{font-family:'Cinzel',serif;font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--cream);background:var(--burgundy);border:none;padding:12px 24px;cursor:pointer;border-radius:4px;transition:all .2s;}
+.btn-primary:hover{background:var(--burgundy-light);}
+.btn-primary:disabled{opacity:.5;cursor:not-allowed;}
+.btn-outline{font-family:'Cinzel',serif;font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--burgundy);background:none;border:1px solid var(--burgundy);padding:11px 22px;cursor:pointer;border-radius:4px;transition:all .2s;}
+.btn-outline:hover{background:var(--burgundy);color:var(--cream);}
+.btn-row{display:flex;gap:12px;margin-top:6px;}
+/* Kegiatan cards */
+.keg-cards{display:flex;flex-direction:column;gap:14px;max-width:680px;}
+.keg-card{background:var(--white);border:1px solid var(--parchment2);border-radius:6px;overflow:hidden;display:flex;transition:all .2s;}
+.keg-card:hover{border-color:var(--burgundy-light);box-shadow:0 6px 24px rgba(110,26,51,.1);}
+.keg-card-img{width:120px;flex-shrink:0;object-fit:cover;}
+.keg-card-img-ph{width:120px;flex-shrink:0;background:var(--parchment);display:flex;align-items:center;justify-content:center;font-size:32px;opacity:.5;}
+.keg-card-body{padding:16px;flex:1;}
+.keg-card-date{font-family:'Cinzel',serif;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--gold);margin-bottom:6px;}
+.keg-card-title{font-size:16px;color:var(--text);font-weight:600;margin-bottom:4px;}
+.keg-card-desc{font-size:13px;color:var(--text-muted);font-style:italic;}
+.keg-card-del{font-size:11px;color:rgba(198,40,40,.6);cursor:pointer;margin-top:10px;display:inline-block;font-family:'Cinzel',serif;letter-spacing:1px;background:none;border:none;padding:0;}
+.keg-card-del:hover{color:#C62828;text-decoration:underline;}
+.empty-state{text-align:center;padding:40px;color:var(--text-muted);font-style:italic;font-size:14px;}
+.empty-state em{display:block;font-size:32px;margin-bottom:10px;font-style:normal;}
+/* Toast */
+.toast-msg{position:fixed;bottom:24px;right:24px;font-family:'Cinzel',serif;font-size:11px;letter-spacing:2px;padding:12px 22px;border-radius:6px;box-shadow:0 6px 24px rgba(0,0,0,.2);opacity:0;transition:opacity .3s;pointer-events:none;z-index:9999;}
+.toast-msg.ok{background:var(--burgundy);color:var(--cream);}
+.toast-msg.err{background:#C62828;color:#fff;}
+.toast-msg.show{opacity:1;}
+/* Admin badge */
+.admin-badge{display:none;position:fixed;top:72px;right:20px;background:var(--gold);color:var(--burgundy-dark);font-family:'Cinzel',serif;font-size:9px;letter-spacing:2px;padding:6px 14px;border-radius:20px;z-index:100;cursor:pointer;}
+.admin-badge.show{display:block;}
+/* Loading */
+.loading{text-align:center;padding:30px;color:var(--text-muted);font-style:italic;font-size:14px;}
+@media(max-width:768px){
+  .seksi-hero,.pengurus-section,.keg-section{padding-left:22px;padding-right:22px;}
+  .form-row{grid-template-columns:1fr;}
+  .keg-card-img,.keg-card-img-ph{width:90px;}
+}
+</style>
+</head>
+<body>
+
+<nav class="site-nav">
+  <div class="nav-inner">
+    <a href="../../index.html" class="nav-brand">
+      <img src="../../assets/images/logo-gkps2.png" class="nav-logo-img" alt="Logo GKPS">
+      <div class="nav-logo-divider"></div>
+      <img src="../../assets/images/logo-gkps-thema.png" class="nav-logo-thema" alt="Logo Tema GKPS">
+      <div class="nav-title">GKPS Resort Medan Utara<span>Gereja Kristen Protestan Simalungun</span></div>
+    </a>
+    <div class="nav-links">
+      <a href="../../index.html#jemaat-sec" class="nav-link">Jemaat</a>
+      <a href="../../index.html#seksi-sec" class="nav-link">Seksi Resort</a>
+      <a href="../../index.html#pengurus-sec" class="nav-link">Pengurus</a>
+      <a href="../../index.html#kegiatan-sec" class="nav-link">Kegiatan</a>
+    </div>
+  </div>
+</nav>
+
+<div id="admin-edit-badge" class="admin-badge" onclick="toggleForm()">✏ Tambah Kegiatan</div>
+
+<div class="page-content">
+  <div class="inner-nav">
+    <a href="../krakatau.html#tab-seksi" class="back-btn">← Kembali</a>
+    <div class="inner-crumb">Jemaat / GKPS Krakatau / <strong>Seksi Sekolah Minggu</strong></div>
+  </div>
+
+  <!-- Hero -->
+  <section class="seksi-hero">
+    <div class="sh-tag">✦ Seksi Jemaat ✦</div>
+    <h1 class="sh-title">Seksi <em>Sekolah Minggu</em></h1>
+    <p style="color:rgba(255,255,255,.65);font-size:15px;font-style:italic;margin-top:8px;">Pelayanan pembinaan anak-anak dan remaja</p>
+    <div class="sh-meta">
+      <div class="sh-meta-item">
+        <div class="sh-meta-label">Jemaat</div>
+        <div class="sh-meta-val">GKPS Krakatau</div>
+      </div>
+      <div class="sh-meta-item">
+        <div class="sh-meta-label">Resort</div>
+        <div class="sh-meta-val">GKPS Resort Medan Utara</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Pengurus -->
+  <section class="pengurus-section">
+    <div class="section-heading"><span>📚</span> Pengurus Seksi Sekolah Minggu – GKPS Krakatau</div>
+    <div id="pengurus-wrap">
+      <div class="loading">Memuat data pengurus...</div>
+    </div>
+  </section>
+
+  <!-- Kegiatan -->
+  <section class="keg-section">
+    <div class="section-heading"><span>📅</span> Kegiatan Seksi</div>
+
+    <!-- Form Tambah (hanya admin) -->
+    <div class="keg-add-form" id="keg-form">
+      <div class="form-row">
+        <div class="fg">
+          <label>Judul Kegiatan *</label>
+          <input type="text" id="f-judul" placeholder="Nama kegiatan...">
+        </div>
+        <div class="fg">
+          <label>Tanggal *</label>
+          <input type="date" id="f-tgl">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="fg">
+          <label>Waktu</label>
+          <input type="time" id="f-waktu">
+        </div>
+        <div class="fg">
+          <label>Lokasi</label>
+          <input type="text" id="f-lokasi" placeholder="Tempat kegiatan...">
+        </div>
+      </div>
+      <div class="fg">
+        <label>Keterangan Kegiatan</label>
+        <textarea id="f-desc" placeholder="Deskripsi singkat kegiatan..."></textarea>
+      </div>
+      <div class="fg">
+        <label>Upload Foto</label>
+        <div class="upload-area" id="upload-area">
+          <input type="file" id="f-foto" accept="image/*" onchange="previewFoto(this)">
+          <div class="upload-area-icon">📷</div>
+          <div class="upload-area-text">Klik atau seret foto ke sini</div>
+          <div class="upload-area-sub">JPG, PNG — maks 5MB</div>
+          <img id="preview-img" class="preview-img" alt="Preview">
+        </div>
+      </div>
+      <div class="btn-row">
+        <button class="btn-primary" id="btn-simpan" onclick="simpanKegiatan()">✝ Simpan Kegiatan</button>
+        <button class="btn-outline" onclick="toggleForm()">Batal</button>
+      </div>
+    </div>
+
+    <!-- Daftar Kegiatan -->
+    <div class="keg-cards" id="keg-list">
+      <div class="loading">Memuat kegiatan...</div>
+    </div>
+  </section>
+</div>
+
+<!-- Footer -->
+<footer class="site-footer">
+  <div class="footer-logos">
+    <img src="../../assets/images/logo-gkps2.png" class="footer-logo-img" alt="Logo GKPS">
+    <div class="footer-logo-divider"></div>
+    <img src="../../assets/images/logo-gkps-thema.png" class="footer-logo-thema" alt="Logo Tema GKPS">
+  </div>
+  <div class="footer-name">GKPS Resort Medan Utara</div>
+  <div class="footer-sub">Gereja Kristen Protestan Simalungun — Melayani dengan Kasih</div>
+  <div class="footer-links">
+    <a href="../../index.html" class="footer-link">Beranda</a>
+    <span style="color:var(--parchment2)">·</span>
+    <a href="../../index.html#jemaat-sec" class="footer-link">Jemaat</a>
+  </div>
+  <div class="footer-bottom">© 2024 GKPS Resort Medan Utara · Soli Deo Gloria</div>
+</footer>
+
+<div class="toast-msg" id="toast"></div>
+
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
+<script src="../../assets/js/firebase-db.js"></script>
+<script>
+const JEMAAT_ID = 'krakatau';
+const SEKSI_ID  = 'sekolahminggu';
+const KEG_KEY   = 'keg_' + JEMAAT_ID + '_' + SEKSI_ID;
+const PGR_KEY   = 'pgr_' + JEMAAT_ID + '_' + SEKSI_ID;
+
+/* ── Default pengurus jika belum ada di DB ── */
+const DEFAULT_PENGURUS = [
+  { jabatan:'Ketua',       nama:'Nama Ketua',     ket:'Periode 2022–2025' },
+  { jabatan:'Wakil Ketua', nama:'Nama Wakil',     ket:'' },
+  { jabatan:'Sekretaris',  nama:'Nama Sekretaris',ket:'' },
+  { jabatan:'Bendahara',   nama:'Nama Bendahara', ket:'' },
+];
+
+/* ── ADMIN CHECK ── */
+function isAdmin(){
+  return localStorage.getItem('gkps_admin_logged')==='true'||
+         sessionStorage.getItem('gkps_admin_logged')==='true';
+}
+
+/* ── TOAST ── */
+function toast(msg,ok=true){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.className='toast-msg '+(ok?'ok':'err')+' show';
+  setTimeout(()=>t.classList.remove('show'),3000);
+}
+
+/* ── TOGGLE FORM ── */
+function toggleForm(){
+  const f=document.getElementById('keg-form');
+  f.classList.toggle('show');
+  if(f.classList.contains('show')) f.scrollIntoView({behavior:'smooth'});
+}
+
+/* ── PREVIEW FOTO ── */
+function previewFoto(input){
+  if(input.files&&input.files[0]){
+    const r=new FileReader();
+    r.onload=e=>{
+      const p=document.getElementById('preview-img');
+      p.src=e.target.result;p.style.display='block';
+    };
+    r.readAsDataURL(input.files[0]);
+  }
+}
+
+/* ── RENDER PENGURUS ── */
+function renderPengurus(list){
+  const wrap=document.getElementById('pengurus-wrap');
+  if(!list||list.length===0){
+    wrap.innerHTML='<p class="pengurus-empty">Data pengurus belum tersedia.</p>';return;
+  }
+  wrap.innerHTML=`
+  <div class="pengurus-table-wrap">
+  <table class="pengurus-table">
+    <thead><tr><th>No</th><th>Jabatan</th><th>Nama</th><th>Keterangan</th></tr></thead>
+    <tbody>${list.map((p,i)=>`
+      <tr><td>${i+1}</td><td>${p.jabatan||''}</td><td>${p.nama||''}</td><td>${p.ket||'-'}</td></tr>
+    `).join('')}</tbody>
+  </table>
+  </div>`;
+}
+
+/* ── RENDER KEGIATAN ── */
+function renderKegiatan(list){
+  const el=document.getElementById('keg-list');
+  if(!list||list.length===0){
+    el.innerHTML='<div class="empty-state"><em>📅</em>Belum ada kegiatan yang tercatat.</div>';return;
+  }
+  el.innerHTML=list.map(k=>{
+    const fotoEl=k.foto
+      ?'<img class="keg-card-img" src="'+k.foto+'" alt="'+k.judul+'">'
+      :'<div class="keg-card-img-ph">📷</div>';
+    const tgl=k.tgl?new Date(k.tgl).toLocaleDateString('id-ID',{day:'2-digit',month:'long',year:'numeric'}):'';
+    const delBtn=isAdmin()
+      ?'<button class="keg-card-del" onclick="hapusKegiatan(\''+k.id+'\')">🗑 Hapus</button>':'';
+    return `<div class="keg-card" id="keg-${k.id}">
+      ${fotoEl}
+      <div class="keg-card-body">
+        <div class="keg-card-date">${tgl}${k.waktu?' · '+k.waktu:''}</div>
+        <div class="keg-card-title">${k.judul||''}</div>
+        ${k.lokasi?'<div class="keg-card-desc">📍 '+k.lokasi+'</div>':''}
+        ${k.desc?'<div class="keg-card-desc" style="margin-top:4px;">'+k.desc+'</div>':''}
+        ${delBtn}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+/* ── SIMPAN KEGIATAN ── */
+async function simpanKegiatan(){
+  if(!isAdmin()){toast('Hanya admin yang bisa menyimpan kegiatan!',false);return;}
+  const judul=document.getElementById('f-judul').value.trim();
+  const tgl  =document.getElementById('f-tgl').value;
+  if(!judul){toast('Judul kegiatan wajib diisi!',false);return;}
+  if(!tgl){toast('Tanggal wajib diisi!',false);return;}
+
+  const btn=document.getElementById('btn-simpan');
+  btn.disabled=true;btn.textContent='Menyimpan...';
+
+  let fotoData=null;
+  const fotoInput=document.getElementById('f-foto');
+  if(fotoInput.files&&fotoInput.files[0]){
+    fotoData=await readFileAsBase64(fotoInput.files[0]);
+    if(fotoData) fotoData=await DB.compressFoto(fotoData);
+  }
+
+  const item={
+    id: Date.now().toString(),
+    judul,tgl,
+    waktu:document.getElementById('f-waktu').value||'',
+    lokasi:document.getElementById('f-lokasi').value.trim(),
+    desc:document.getElementById('f-desc').value.trim(),
+    foto:fotoData,
+    _order:Date.now()
+  };
+
+  try{
+    await DB.addItem(KEG_KEY,item);
+    toast('Kegiatan berhasil disimpan!');
+    // Reset form
+    ['f-judul','f-tgl','f-waktu','f-lokasi','f-desc'].forEach(id=>document.getElementById(id).value='');
+    document.getElementById('preview-img').style.display='none';
+    document.getElementById('keg-form').classList.remove('show');
+    loadKegiatan();
+  }catch(e){
+    toast('Gagal menyimpan: '+e.message,false);
+  }finally{
+    btn.disabled=false;btn.textContent='✝ Simpan Kegiatan';
+  }
+}
+
+/* ── HAPUS KEGIATAN ── */
+async function hapusKegiatan(id){
+  if(!confirm('Hapus kegiatan ini?'))return;
+  try{
+    await DB.deleteItem(KEG_KEY,id);
+    toast('Kegiatan dihapus.');
+    loadKegiatan();
+  }catch(e){toast('Gagal hapus: '+e.message,false);}
+}
+
+/* ── READ FILE AS BASE64 ── */
+function readFileAsBase64(file){
+  return new Promise(res=>{
+    const r=new FileReader();
+    r.onload=e=>res(e.target.result);
+    r.onerror=()=>res(null);
+    r.readAsDataURL(file);
+  });
+}
+
+/* ── LOAD DATA ── */
+async function loadPengurus(){
+  try{
+    let list=await DB.getList(PGR_KEY);
+    if(!list||list.length===0) list=DEFAULT_PENGURUS;
+    renderPengurus(list);
+  }catch(e){renderPengurus(DEFAULT_PENGURUS);}
+}
+
+async function loadKegiatan(){
+  try{
+    const list=await DB.getList(KEG_KEY);
+    renderKegiatan(list);
+  }catch(e){
+    document.getElementById('keg-list').innerHTML='<div class="empty-state"><em>⚠️</em>Gagal memuat kegiatan.</div>';
+  }
+}
+
+/* ── INIT ── */
+window.addEventListener('DOMContentLoaded',()=>{
+  loadPengurus();
+  loadKegiatan();
+  if(isAdmin()){
+    document.getElementById('admin-edit-badge').classList.add('show');
+  }
+});
+</script>
+</body>
+</html>
